@@ -1,6 +1,6 @@
 # Laravel REST API
 
-Proyek backend **Pure RESTful API** berbasis Laravel 12 yang dioptimasi untuk kecepatan, ukuran ringan (*lightweight*), dan format respons JSON yang konsisten.
+Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk kecepatan, ukuran ringan (*lightweight*), dan format respons JSON yang konsisten.
 
 ---
 
