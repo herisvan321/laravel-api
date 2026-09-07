@@ -17,31 +17,46 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Paksa semua request dan respons agar berformat JSON
+        $middleware->prepend(\App\Http\Middleware\ForceJsonResponse::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Pastikan semua respons error berformat JSON (API)
+        // 1. Selalu render error sebagai JSON (standar API)
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request, Throwable $e) => true,
         );
 
+        // 2. Format autentikasi gagal (401 Unauthorized)
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            return response()->json([
+                'message' => 'Unauthenticated.',
+            ], 401);
+        });
+
+        // 3. Format validasi input gagal (422 Unprocessable Content)
+        $exceptions->render(function (ValidationException $e, Request $request) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        });
+
+        // 4. Format route / resource tidak ditemukan (404 Not Found)
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             return response()->json([
                 'message' => $e->getMessage() ?: 'The route could not be found.',
             ], 404);
         });
 
+        // 5. Format HTTP Exception lainnya (405 Method Not Allowed, 403 Forbidden, 429 Throttle, dsb.)
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
             return response()->json([
                 'message' => $e->getMessage() ?: 'HTTP error occurred.',
             ], $e->getStatusCode());
         });
 
+        // 6. Format Internal Server Error (500)
         $exceptions->render(function (Throwable $e, Request $request) {
-            if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
-                return null;
-            }
-
             return response()->json([
                 'message' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
             ], 500);

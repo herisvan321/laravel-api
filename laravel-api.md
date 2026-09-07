@@ -33,9 +33,18 @@ Secara default, rute API memiliki prefix `/api` (misal: `/api/hello`). Jika ingi
 
 ---
 
-## 2. Format Error & 404 Selalu JSON (Standar API)
+## 2. Format Respons & Error Selalu JSON (Standar Pure API)
 
-Agar tidak menampilkan halaman HTML atau debug trace yang panjang ketika terjadi error (misalnya route tidak ditemukan, method salah, atau server error), exception handling dikonfigurasi di [`bootstrap/app.php`](bootstrap/app.php):
+Agar aplikasi **100% selalu merespons dalam format JSON** (bahkan jika client/browser tidak menyertakan header `Accept: application/json`):
+
+### A. Middleware `ForceJsonResponse`
+Dibuat di [`app/Http/Middleware/ForceJsonResponse.php`](app/Http/Middleware/ForceJsonResponse.php) dan didaftarkan di [`bootstrap/app.php`](bootstrap/app.php):
+- Memaksa request header `Accept: application/json` sejak awal sebelum route dieksekusi.
+- Mencegah error umum Laravel seperti pengalihan ke `route('login')` saat unauthenticated (langsung mengembalikan 401 JSON).
+- Mengubah string biasa yang di-return route menjadi respons JSON otomatis.
+
+### B. Global Exception Handler
+Dikonfigurasi di [`bootstrap/app.php`](bootstrap/app.php) untuk menangani seluruh error:
 
 ```php
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
