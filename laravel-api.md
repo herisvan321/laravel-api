@@ -33,57 +33,55 @@ Secara default, rute API memiliki prefix `/api` (misal: `/api/hello`). Jika ingi
 
 ---
 
-## 2. Format Respons & Error Selalu JSON (Standar Pure API)
+## 2. Format Respons Seragam & Standar API (`ApiResponse`)
 
-Agar aplikasi **100% selalu merespons dalam format JSON** (bahkan jika client/browser tidak menyertakan header `Accept: application/json`):
+Semua respons dari API mengikuti standar format seragam:
+- **Sukses (2xx):**
+  ```json
+  {
+    "success": true,
+    "message": "Data retrieved successfully",
+    "data": { ... }
+  }
+  ```
+- **Error (4xx / 5xx):**
+  ```json
+  {
+    "success": false,
+    "message": "Error description message"
+  }
+  ```
+- **Validation Error (422):**
+  ```json
+  {
+    "success": false,
+    "message": "The given data was invalid.",
+    "errors": {
+      "email": ["The email field is required."]
+    }
+  }
+  ```
 
-### A. Middleware `ForceJsonResponse`
-Dibuat di [`app/Http/Middleware/ForceJsonResponse.php`](app/Http/Middleware/ForceJsonResponse.php) dan didaftarkan di [`bootstrap/app.php`](bootstrap/app.php):
-- Memaksa request header `Accept: application/json` sejak awal sebelum route dieksekusi.
-- Mencegah error umum Laravel seperti pengalihan ke `route('login')` saat unauthenticated (langsung mengembalikan 401 JSON).
-- Mengubah string biasa yang di-return route menjadi respons JSON otomatis.
-
-### B. Global Exception Handler
-Dikonfigurasi di [`bootstrap/app.php`](bootstrap/app.php) untuk menangani seluruh error:
-
+### A. Helper `ApiResponse`
+Tersedia di [`app/Http/Responses/ApiResponse.php`](app/Http/Responses/ApiResponse.php) untuk digunakan di Controller maupun Route:
 ```php
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\AuthenticationException;
+use App\Http\Responses\ApiResponse;
 
-->withExceptions(function (Exceptions $exceptions): void {
-    // 1. Seluruh respons error dipaksa dalam format JSON
-    $exceptions->shouldRenderJsonWhen(
-        fn (Request $request, Throwable $e) => true,
-    );
+// Response Sukses
+return ApiResponse::success($data, 'Data retrieved successfully', 200);
 
-    // 2. Format bersih untuk 404 (Not Found)
-    $exceptions->render(function (NotFoundHttpException $e, Request $request) {
-        return response()->json([
-            'message' => $e->getMessage() ?: 'The route could not be found.',
-        ], 404);
-    });
-
-    // 3. Format untuk HTTP Exception lainnya (405 Method Not Allowed, 403 Forbidden, dsb.)
-    $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
-        return response()->json([
-            'message' => $e->getMessage() ?: 'HTTP error occurred.',
-        ], $e->getStatusCode());
-    });
-
-    // 4. Format untuk Internal Server Error (500)
-    $exceptions->render(function (Throwable $e, Request $request) {
-        if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
-            return null; // Biarkan format standar bawaan Laravel untuk validasi dan autentikasi
-        }
-
-        return response()->json([
-            'message' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
-        ], 500);
-    });
-})
+// Response Error
+return ApiResponse::error('Something went wrong', 400, $errors);
 ```
+
+### B. Middleware `ForceJsonResponse`
+Dibuat di [`app/Http/Middleware/ForceJsonResponse.php`](app/Http/Middleware/ForceJsonResponse.php) dan didaftarkan di [`bootstrap/app.php`](bootstrap/app.php):
+- Memaksa request header `Accept: application/json`.
+- Mencegah redirect web saat auth gagal atau validasi gagal.
+- Membungkus response teks biasa secara otomatis.
+
+### C. Global Exception Handler
+Dikonfigurasi di [`bootstrap/app.php`](bootstrap/app.php) menggunakan `ApiResponse::error()` sehingga seluruh error HTTP (401, 404, 405, 422, 500) menghasilkan struktur JSON seragam.
 
 ---
 

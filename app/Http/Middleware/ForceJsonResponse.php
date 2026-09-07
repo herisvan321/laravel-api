@@ -33,10 +33,8 @@ class ForceJsonResponse
             if (json_last_error() === JSON_ERROR_NONE && ! is_numeric($content)) {
                 $response->headers->set('Content-Type', 'application/json');
             } elseif ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300 && ! empty($content)) {
-                // Jika controller me-return string biasa (bukan JSON), bungkus menjadi JSON
-                return response()->json([
-                    'data' => $content,
-                ], $response->getStatusCode());
+                // Jika controller me-return string biasa (bukan JSON), bungkus menjadi JSON standar
+                return \App\Http\Responses\ApiResponse::success($content, 'Success', $response->getStatusCode());
             }
         }
 
