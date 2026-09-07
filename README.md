@@ -65,7 +65,14 @@ curl -i http://127.0.0.1:8000/api/hello
 **Respons (200 OK):**
 ```json
 {
-  "message": "Hello World"
+  "success": true,
+  "code": 200,
+  "message": "Data retrieved successfully",
+  "data": {
+    "framework": "Laravel",
+    "version": "13.30.1",
+    "status": "active"
+  }
 }
 ```
 
@@ -73,7 +80,7 @@ curl -i http://127.0.0.1:8000/api/hello
 
 ## 🛡️ Standar Format Respons Error
 
-Semua permintaan ke API dijamin menghasilkan respons JSON dengan HTTP Status Code yang semantik:
+Semua permintaan ke API dijamin menghasilkan respons JSON dengan atribut `success`, `code`, dan `message`:
 
 #### 1. Rute Tidak Ditemukan (`404 Not Found`)
 ```http
@@ -81,6 +88,8 @@ HTTP/1.0 404 Not Found
 Content-Type: application/json
 
 {
+  "success": false,
+  "code": 404,
   "message": "The route api/contoh could not be found."
 }
 ```
@@ -91,16 +100,32 @@ HTTP/1.0 405 Method Not Allowed
 Content-Type: application/json
 
 {
+  "success": false,
+  "code": 405,
   "message": "The POST method is not supported for route api/hello. Supported methods: GET, HEAD."
 }
 ```
 
-#### 3. Error Server (`500 Internal Server Error`)
+#### 3. Belum Terautentikasi (`401 Unauthorized`)
+```http
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+
+{
+  "success": false,
+  "code": 401,
+  "message": "Unauthenticated."
+}
+```
+
+#### 4. Error Server (`500 Internal Server Error`)
 ```http
 HTTP/1.0 500 Internal Server Error
 Content-Type: application/json
 
 {
+  "success": false,
+  "code": 500,
   "message": "Internal server error."
 }
 ```

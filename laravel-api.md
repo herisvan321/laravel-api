@@ -40,6 +40,7 @@ Semua respons dari API mengikuti standar format seragam:
   ```json
   {
     "success": true,
+    "code": 200,
     "message": "Data retrieved successfully",
     "data": { ... }
   }
@@ -48,13 +49,15 @@ Semua respons dari API mengikuti standar format seragam:
   ```json
   {
     "success": false,
-    "message": "Error description message"
+    "code": 404,
+    "message": "The route api/notfound could not be found."
   }
   ```
 - **Validation Error (422):**
   ```json
   {
     "success": false,
+    "code": 422,
     "message": "The given data was invalid.",
     "errors": {
       "email": ["The email field is required."]

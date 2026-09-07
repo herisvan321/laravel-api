@@ -18,6 +18,7 @@ class ApiResponse
     {
         $payload = [
             'success' => true,
+            'code' => $code,
             'message' => $message,
             'data' => $data,
         ];
@@ -37,6 +38,7 @@ class ApiResponse
     {
         $payload = [
             'success' => false,
+            'code' => $code,
             'message' => $message,
         ];
 
