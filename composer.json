@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.17",
+        "laravel/octane": "^2.19",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0"
     },
@@ -35,13 +36,32 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install --ignore-scripts",
-            "npm run build"
+            "@php artisan migrate --force"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan dev"
+        ],
+        "octane": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan octane:dev"
+        ],
+        "octane:start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan octane:start --server=swoole"
+        ],
+        "octane:reload": [
+            "@php artisan octane:reload"
+        ],
+        "octane:status": [
+            "@php artisan octane:status"
+        ],
+        "octane:stop": [
+            "@php artisan octane:stop"
+        ],
+        "optimize:prod": [
+            "@php artisan optimize",
+            "composer dump-autoload -o --classmap-authoritative"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",

@@ -41,9 +41,18 @@ php artisan migrate
 ```
 
 ### 4. Jalankan Server Lokal
-```bash
-php artisan serve
-```
+Pilih mode server yang diinginkan:
+
+- **Mode Super Cepat (Laravel Octane + Swoole + Auto-Reload Otomatis):**
+  ```bash
+  composer octane
+  # Server aktif di http://127.0.0.1:8000
+  # Otomatis me-reload worker saat file diedit (100% Pure PHP, tanpa node_modules!)
+  ```
+- **Mode Standar (Bawaan PHP):**
+  ```bash
+  php artisan serve
+  ```
 Server akan aktif di: `http://127.0.0.1:8000`
 
 ---
@@ -129,14 +138,33 @@ Content-Type: application/json
   "message": "Internal server error."
 }
 ```
+> **Catatan Keamanan Production (OWASP):** Pada server live (`APP_DEBUG=false`), detail query database, path sistem, dan stack trace disembunyikan otomatis. Pada local development (`APP_DEBUG=true`), pesan error asli ditampilkan untuk mempermudah debugging. Log lengkap tetap tersimpan di `storage/logs/laravel.log`.
 
 ---
 
 ## 🛠️ Perintah Pengembangan
 
 ```bash
-# Menjalankan server lokal
+# Menjalankan server super-cepat Octane dengan Auto-Reload otomatis (Pure PHP)
+composer octane
+
+# Menjalankan server Octane standar tanpa file watcher
+composer run octane:start
+
+# Me-reload worker Octane secara manual
+composer run octane:reload
+
+# Mengecek apakah server Octane sedang berjalan
+composer run octane:status
+
+# Menghentikan server Octane
+composer run octane:stop
+
+# Menjalankan server lokal standar PHP
 php artisan serve
+
+# Menjalankan pengujian (automated tests)
+php artisan test
 
 # Melihat daftar seluruh route API
 php artisan route:list
@@ -155,12 +183,17 @@ composer update
 
 ## 🚀 Deployment ke Production
 
-Saat deploy ke server produksi, pasang dependensi tanpa paket dev untuk performa optimal dan ukuran minimal:
+Untuk performa maksimal setara/melampaui Lumen pada server production:
 
 ```bash
+# 1. Pasang dependensi tanpa paket dev & optimasi autoloader
 composer install --no-dev --optimize-autoloader
-php artisan config:cache
-php artisan route:cache
+
+# 2. Aktifkan cache route, config, dan autoloader classmap
+composer run optimize:prod
+
+# 3. Jalankan Laravel Octane di background atau via systemd/supervisor
+php artisan octane:start --server=swoole --port=8000 --workers=auto
 ```
 
 ---

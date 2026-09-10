@@ -28,13 +28,17 @@ class ForceJsonResponse
         if (! $response instanceof JsonResponse && ! $response instanceof BinaryFileResponse && ! $response instanceof StreamedResponse) {
             $content = $response->getContent();
 
-            // Cek apakah konten string sudah berformat JSON
-            json_decode($content);
-            if (json_last_error() === JSON_ERROR_NONE && ! is_numeric($content)) {
-                $response->headers->set('Content-Type', 'application/json');
-            } elseif ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300 && ! empty($content)) {
-                // Jika controller me-return string biasa (bukan JSON), bungkus menjadi JSON standar
-                return \App\Http\Responses\ApiResponse::success($content, 'Success', $response->getStatusCode());
+            if (is_string($content) && $content !== '') {
+                $trimmed = trim($content);
+                $firstChar = $trimmed[0] ?? '';
+
+                // Gunakan native json_validate (PHP 8.3+) tanpa alokasi memori json_decode
+                if (($firstChar === '{' || $firstChar === '[') && json_validate($trimmed)) {
+                    $response->headers->set('Content-Type', 'application/json');
+                } elseif ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+                    // Jika controller me-return string biasa (bukan JSON), bungkus menjadi JSON standar
+                    return \App\Http\Responses\ApiResponse::success($content, 'Success', $response->getStatusCode());
+                }
             }
         }
 
