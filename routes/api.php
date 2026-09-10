@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HealthController;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Service Health & Monitoring (Microservices / Orchestrators)
+Route::get('/health', HealthController::class);
 
 // Authentication (JWT)
 Route::prefix('auth')->group(function () {

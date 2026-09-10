@@ -65,7 +65,8 @@ Base URL: `http://127.0.0.1:8000`
 
 | Method | Endpoint | Deskripsi | Autentikasi |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/up` | Health check endpoint aplikasi | Publik |
+| `GET` | `/up` | Health check endpoint bawaan aplikasi | Publik |
+| `GET` | `/api/health` | Service monitoring (Database, Cache, Octane, Memori) | Publik |
 | `GET` | `/api/hello` | Tes endpoint API sederhana | Publik |
 | `POST` | `/api/auth/register` | Mendaftarkan akun user baru & return JWT token | Publik |
 | `POST` | `/api/auth/login` | Login dengan email & password | Publik |
@@ -74,7 +75,47 @@ Base URL: `http://127.0.0.1:8000`
 | `POST` | `/api/auth/refresh` | Me-refresh token JWT yang akan kedaluwarsa | `Bearer <JWT>` |
 | `POST` | `/api/auth/logout` | Menghanguskan / blacklist token JWT saat ini | `Bearer <JWT>` |
 
-### Contoh Pemanggilan Endpoint:
+### Contoh Pemanggilan Endpoint Health Check:
+```bash
+curl -i http://127.0.0.1:8000/api/health
+```
+**Respons (200 OK):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "System is healthy",
+  "data": {
+    "status": "healthy",
+    "timestamp": "2026-09-10T16:10:36+00:00",
+    "octane": {
+      "running": true,
+      "server": "swoole"
+    },
+    "services": {
+      "database": {
+        "status": "healthy",
+        "connection": "sqlite",
+        "latency_ms": 1.11
+      },
+      "cache": {
+        "status": "healthy",
+        "driver": "database",
+        "latency_ms": 5.91
+      }
+    },
+    "system": {
+      "php_version": "8.4.17",
+      "laravel_version": "13.30.1",
+      "environment": "local",
+      "memory_usage_mb": 24,
+      "memory_peak_mb": 24
+    }
+  }
+}
+```
+
+### Contoh Pemanggilan Endpoint Hello:
 ```bash
 curl -i http://127.0.0.1:8000/api/hello
 ```
