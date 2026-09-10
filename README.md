@@ -139,6 +139,162 @@ curl -i http://127.0.0.1:8000/api/hello
 
 ---
 
+## 🔐 Dokumentasi Lengkap Endpoint Autentikasi (JWT)
+
+Semua endpoint autentikasi menggunakan format JSON standar dan dilengkapi dengan rate limiting untuk keamanan.
+
+### 1. Register Akun Baru (`POST /api/auth/register`)
+Mendaftarkan akun pengguna baru dan langsung mengembalikan JWT token.
+- **Rate Limit:** 10 request / menit
+- **Headers:** `Content-Type: application/json`, `Accept: application/json`
+
+**Request Body:**
+```json
+{
+  "name": "Budi Santoso",
+  "email": "budi@example.com",
+  "password": "password123"
+}
+```
+
+**Respons Sukses (`201 Created`):**
+```json
+{
+  "success": true,
+  "code": 201,
+  "message": "User registered successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "Budi Santoso",
+      "email": "budi@example.com",
+      "created_at": "2026-09-10T16:30:00+00:00",
+      "updated_at": "2026-09-10T16:30:00+00:00"
+    },
+    "authorization": {
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+      "type": "bearer",
+      "expires_in": 3600
+    }
+  }
+}
+```
+
+---
+
+### 2. Login Pengguna (`POST /api/auth/login`)
+Melakukan autentikasi menggunakan email dan password untuk mendapatkan JWT token.
+- **Rate Limit (Proteksi Brute-Force):** 10 request / menit per IP
+- **Headers:** `Content-Type: application/json`, `Accept: application/json`
+
+**Request Body:**
+```json
+{
+  "email": "budi@example.com",
+  "password": "password123"
+}
+```
+
+**Respons Sukses (`200 OK`):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "Budi Santoso",
+      "email": "budi@example.com",
+      "created_at": "2026-09-10T16:30:00+00:00",
+      "updated_at": "2026-09-10T16:30:00+00:00"
+    },
+    "authorization": {
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+      "type": "bearer",
+      "expires_in": 3600
+    }
+  }
+}
+```
+
+**Respons Gagal / Password Salah (`401 Unauthorized`):**
+```json
+{
+  "success": false,
+  "code": 401,
+  "message": "Invalid email or password."
+}
+```
+
+---
+
+### 3. Profil Pengguna (`GET /api/auth/me` atau `GET /api/user`)
+Mengambil data profil pengguna yang sedang login berdasarkan token JWT di header.
+- **Headers:** 
+  - `Authorization: Bearer <token_jwt>`
+  - `Accept: application/json`
+
+**Respons Sukses (`200 OK`):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "User profile retrieved successfully",
+  "data": {
+    "id": 1,
+    "name": "Budi Santoso",
+    "email": "budi@example.com",
+    "created_at": "2026-09-10T16:30:00+00:00",
+    "updated_at": "2026-09-10T16:30:00+00:00"
+  }
+}
+```
+
+---
+
+### 4. Refresh Token (`POST /api/auth/refresh`)
+Memperbarui token JWT yang masa berlakunya akan habis dan mengembalikan token baru.
+- **Headers:** 
+  - `Authorization: Bearer <token_jwt>`
+  - `Accept: application/json`
+
+**Respons Sukses (`200 OK`):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Token refreshed successfully",
+  "data": {
+    "authorization": {
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.newToken...",
+      "type": "bearer",
+      "expires_in": 3600
+    }
+  }
+}
+```
+
+---
+
+### 5. Logout (`POST /api/auth/logout`)
+Menghanguskan / mem-blacklist token JWT yang sedang aktif sehingga tidak dapat digunakan kembali.
+- **Headers:** 
+  - `Authorization: Bearer <token_jwt>`
+  - `Accept: application/json`
+
+**Respons Sukses (`200 OK`):**
+```json
+{
+  "success": true,
+  "code": 200,
+  "message": "Successfully logged out",
+  "data": null
+}
+```
+
+---
+
 ## 🛡️ Standar Format Respons Error
 
 Semua permintaan ke API dijamin menghasilkan respons JSON dengan atribut `success`, `code`, dan `message`:
@@ -167,7 +323,36 @@ Content-Type: application/json
 }
 ```
 
-#### 3. Belum Terautentikasi (`401 Unauthorized`)
+#### 3. Validasi Form Gagal (`422 Unprocessable Content`)
+```http
+HTTP/1.1 422 Unprocessable Content
+Content-Type: application/json
+
+{
+  "success": false,
+  "code": 422,
+  "message": "The email has already been taken.",
+  "errors": {
+    "email": [
+      "The email has already been taken."
+    ]
+  }
+}
+```
+
+#### 4. Terkena Batas Rate Limit (`429 Too Many Requests`)
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{
+  "success": false,
+  "code": 429,
+  "message": "Too Many Attempts."
+}
+```
+
+#### 5. Belum Terautentikasi (`401 Unauthorized`)
 ```http
 HTTP/1.1 401 Unauthorized
 Content-Type: application/json
@@ -179,7 +364,7 @@ Content-Type: application/json
 }
 ```
 
-#### 4. Error Server (`500 Internal Server Error`)
+#### 6. Error Server (`500 Internal Server Error`)
 ```http
 HTTP/1.0 500 Internal Server Error
 Content-Type: application/json
