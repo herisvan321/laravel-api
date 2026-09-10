@@ -97,7 +97,39 @@ Dikonfigurasi di [`bootstrap/app.php`](bootstrap/app.php) menggunakan `ApiRespon
 
 ---
 
-## 3. Optimasi Ukuran Vendor
+## 3. Autentikasi JWT (JSON Web Token)
+
+Project telah menggunakan autentikasi **JWT (JSON Web Token)** versi terbaru (**`php-open-source-saver/jwt-auth` v2.9+**). Konfigurasi ini sangat cocok untuk arsitektur **Microservices**, Mobile Apps, maupun SPA.
+
+### A. Fitur & Keunggulan
+- **Stateless Token:** Token berisi data user yang ditandatangani secara kriptografis sehingga service lain (seperti NestJS, Rust, atau Go) dapat memverifikasi user tanpa query ke database auth.
+- **Guard API Default:** Guard default autentikasi pada [`config/auth.php`](config/auth.php) disetel ke `api` (`driver: jwt`).
+- **Model `User` Terintegrasi:** [`app/Models/User.php`](app/Models/User.php) telah mengimplementasikan interface `JWTSubject`.
+- **Standar Format Konsisten:** Seluruh respons auth dibungkus menggunakan `ApiResponse`.
+
+### B. Konfigurasi Environment (`.env`)
+- `JWT_SECRET`: Kunci enkripsi token (di-generate otomatis via `php artisan jwt:secret`).
+- `JWT_TTL`: Masa berlaku token dalam menit (default: `60` menit).
+
+### C. Daftar Endpoint Autentikasi
+| Method | Endpoint | Fungsi | Header Auth |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Mendaftarkan akun baru & langsung mengembalikan token JWT | Tidak |
+| `POST` | `/api/auth/login` | Login menggunakan email & password | Tidak |
+| `GET` | `/api/auth/me` | Melihat profil pengguna yang sedang login | `Bearer <token>` |
+| `GET` | `/api/user` | Alias melihat data profil pengguna | `Bearer <token>` |
+| `POST` | `/api/auth/refresh` | Memperbarui token yang akan kedaluwarsa | `Bearer <token>` |
+| `POST` | `/api/auth/logout` | Menghanguskan/blacklist token saat ini | `Bearer <token>` |
+
+### D. Contoh Penggunaan
+Kirim header pada setiap request ke endpoint terproteksi:
+```http
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+```
+
+---
+
+## 4. Optimasi Ukuran Vendor
 
 Ukuran awal project: **~88 MB**.
 
@@ -124,7 +156,7 @@ composer install --no-dev --optimize-autoloader
 
 ---
 
-## 4. Optimasi Performa Maksimal: Menyamai & Melampaui Lumen (Laravel Octane + Swoole)
+## 5. Optimasi Performa Maksimal: Menyamai & Melampaui Lumen (Laravel Octane + Swoole)
 
 ### Mengapa Lumen Dulu Cepat dan Mengapa Octane Sekarang Jauh Lebih Unggul?
 - **Lumen (Traditional PHP-FPM):** Memangkas service provider & middleware agar *bootstrapping* framework lebih cepat (~10–20 ms per request). Namun pada setiap request, PHP tetap harus membaca file, mem-parsing script, dan membangun container dari awal.
@@ -178,7 +210,7 @@ composer install --no-dev --optimize-autoloader
 
 ---
 
-## 5. Perintah Berguna (Cheatsheet)
+## 6. Perintah Berguna (Cheatsheet)
 
 | Perintah | Deskripsi |
 | :--- | :--- |

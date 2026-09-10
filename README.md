@@ -8,8 +8,8 @@ Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk ke
 
 - **Pure API Mode:** Rute web dinonaktifkan (`web.php` dimatikan), tanpa *overhead* Blade ataupun frontend assets.
 - **Standar Respons JSON Konsisten:** Semua error (404, 405, 500) otomatis di-render sebagai respons JSON yang bersih, tanpa halaman HTML atau debug trace bocor.
-- **Autentikasi Siap Pakai:** Terintegrasi dengan **Laravel Sanctum** untuk autentikasi berbasis Bearer Token (cocok untuk Mobile App Flutter/Kotlin/Swift maupun SPA React/Vue/Next.js).
-- **Vendor Ringan (~55 MB):** Paket pengembangan yang tidak krusial telah dieliminasi untuk menjaga footprint tetap minimal.
+- **Autentikasi JWT Siap Pakai:** Terintegrasi dengan **JWT (JSON Web Token)** modern via `php-open-source-saver/jwt-auth` (cocok untuk Microservices, Mobile App Flutter/Kotlin/Swift, maupun SPA React/Vue/Next.js).
+- **Vendor Ringan (~56 MB):** Paket pengembangan yang tidak krusial telah dieliminasi untuk menjaga footprint tetap minimal.
 - **Database Portabel:** Menggunakan SQLite secara default, siap dijalankan tanpa setup database server eksternal.
 
 ---
@@ -18,7 +18,7 @@ Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk ke
 
 - **PHP** >= 8.3
 - **Composer**
-- Ekstensi PHP: `sqlite3`, `curl`, `mbstring`, `openssl`
+- Ekstensi PHP: `sqlite3`, `curl`, `mbstring`, `openssl`, `swoole`
 
 ---
 
@@ -29,10 +29,11 @@ Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk ke
 composer install
 ```
 
-### 2. Salin Konfigurasi Environment
+### 2. Salin Konfigurasi Environment & Generate Secret
 ```bash
 cp .env.example .env
 php artisan key:generate
+php artisan jwt:secret
 ```
 
 ### 3. Jalankan Migrasi Database
@@ -65,7 +66,12 @@ Base URL: `http://127.0.0.1:8000`
 | :--- | :--- | :--- | :--- |
 | `GET` | `/up` | Health check endpoint aplikasi | Publik |
 | `GET` | `/api/hello` | Tes endpoint API sederhana | Publik |
-| `GET` | `/api/user` | Mendapatkan data profil pengguna yang login | `Bearer Token` (Sanctum) |
+| `POST` | `/api/auth/register` | Mendaftarkan akun user baru & return JWT token | Publik |
+| `POST` | `/api/auth/login` | Login dengan email & password | Publik |
+| `GET` | `/api/auth/me` | Mendapatkan data profil pengguna yang login | `Bearer <JWT>` |
+| `GET` | `/api/user` | Alias untuk profil pengguna yang login | `Bearer <JWT>` |
+| `POST` | `/api/auth/refresh` | Me-refresh token JWT yang akan kedaluwarsa | `Bearer <JWT>` |
+| `POST` | `/api/auth/logout` | Menghanguskan / blacklist token JWT saat ini | `Bearer <JWT>` |
 
 ### Contoh Pemanggilan Endpoint:
 ```bash
