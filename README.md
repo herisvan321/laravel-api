@@ -9,6 +9,7 @@ Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk ke
 - **Pure API Mode:** Rute web dinonaktifkan (`web.php` dimatikan), tanpa *overhead* Blade ataupun frontend assets.
 - **Standar Respons JSON Konsisten:** Semua error (404, 405, 500) otomatis di-render sebagai respons JSON yang bersih, tanpa halaman HTML atau debug trace bocor.
 - **Autentikasi JWT Siap Pakai:** Terintegrasi dengan **JWT (JSON Web Token)** modern via `php-open-source-saver/jwt-auth` (cocok untuk Microservices, Mobile App Flutter/Kotlin/Swift, maupun SPA React/Vue/Next.js).
+- **Berbagi Auth Antar Microservice:** Panduan lengkap verifikasi JWT di **NestJS** & **Rust** tersedia di [MICROSERVICES_AUTH.md](MICROSERVICES_AUTH.md).
 - **Vendor Ringan (~56 MB):** Paket pengembangan yang tidak krusial telah dieliminasi untuk menjaga footprint tetap minimal.
 - **Database Portabel:** Menggunakan SQLite secara default, siap dijalankan tanpa setup database server eksternal.
 

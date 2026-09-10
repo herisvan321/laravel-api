@@ -127,6 +127,10 @@ Kirim header pada setiap request ke endpoint terproteksi:
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
 ```
 
+### E. Integrasi ke Microservice Lain (NestJS, Rust, dll)
+Token JWT yang dihasilkan oleh Laravel API ini memuat payload `sub` (user_id), `name`, dan `email` serta menggunakan enkripsi `HS256` dengan `JWT_SECRET`. Service lain dapat langsung memverifikasi token tanpa menyentuh database Laravel.
+- **Panduan Lengkap & Contoh Kode:** Silakan baca panduan lengkap di [`MICROSERVICES_AUTH.md`](MICROSERVICES_AUTH.md).
+
 ---
 
 ## 4. Optimasi Ukuran Vendor
