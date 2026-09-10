@@ -48,7 +48,7 @@
         ],
         "octane:start": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan octane:start --server=swoole"
+            "@php artisan octane:start --server=frankenphp"
         ],
         "octane:reload": [
             "@php artisan octane:reload"
