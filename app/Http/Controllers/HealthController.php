@@ -66,10 +66,22 @@ class HealthController extends Controller
         }
 
         // 3. Octane & Server Engine Status
-        $isOctane = isset($_SERVER['LARAVEL_OCTANE']) && $_SERVER['LARAVEL_OCTANE'] == 1;
+        $isOctane = (isset($_SERVER['LARAVEL_OCTANE']) && $_SERVER['LARAVEL_OCTANE'] == 1) || function_exists('frankenphp_handle_request');
+        $octaneEngine = null;
+
+        if ($isOctane) {
+            if (function_exists('frankenphp_handle_request') || isset($_SERVER['FRANKENPHP_VERSION']) || isset($_SERVER['CADDY_SERVER_ADMIN_PORT'])) {
+                $octaneEngine = 'frankenphp';
+            } elseif (config('octane.server') === 'swoole' || (extension_loaded('swoole') && defined('SWOOLE_VERSION') && isset($_SERVER['SWOOLE_HTTP_SERVER']))) {
+                $octaneEngine = 'swoole';
+            } else {
+                $octaneEngine = config('octane.server', env('OCTANE_SERVER', 'frankenphp'));
+            }
+        }
+
         $octaneStatus = [
             'running' => $isOctane,
-            'server' => $isOctane ? config('octane.server', env('OCTANE_SERVER', 'frankenphp')) : null,
+            'server' => $octaneEngine,
         ];
 
         // 4. System & Memory Metrics

@@ -94,7 +94,7 @@ curl -i http://127.0.0.1:8000/api/health
     "timestamp": "2026-09-10T16:10:36+00:00",
     "octane": {
       "running": true,
-      "server": "swoole"
+      "server": "frankenphp"
     },
     "services": {
       "database": {
