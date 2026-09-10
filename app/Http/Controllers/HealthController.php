@@ -69,7 +69,7 @@ class HealthController extends Controller
         $isOctane = isset($_SERVER['LARAVEL_OCTANE']) && $_SERVER['LARAVEL_OCTANE'] == 1;
         $octaneStatus = [
             'running' => $isOctane,
-            'server' => $isOctane ? env('OCTANE_SERVER', 'swoole') : null,
+            'server' => $isOctane ? config('octane.server', env('OCTANE_SERVER', 'frankenphp')) : null,
         ];
 
         // 4. System & Memory Metrics

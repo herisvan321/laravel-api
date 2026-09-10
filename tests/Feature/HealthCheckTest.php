@@ -62,7 +62,7 @@ class HealthCheckTest extends TestCase
 
             $response->assertStatus(200)
                 ->assertJsonPath('data.octane.running', true)
-                ->assertJsonPath('data.octane.server', 'swoole');
+                ->assertJsonPath('data.octane.server', config('octane.server', env('OCTANE_SERVER', 'frankenphp')));
         } finally {
             unset($_SERVER['LARAVEL_OCTANE']);
         }

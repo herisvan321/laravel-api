@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Route;
 // Service Health & Monitoring (Microservices / Orchestrators)
 Route::get('/health', HealthController::class);
 
-// Authentication (JWT)
+// Authentication (JWT) with Brute Force Protection
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
 
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::post('/logout', [AuthController::class, 'logout']);
     });
 });
 
-Route::get('/user', [AuthController::class, 'me'])->middleware('auth:api');
+Route::get('/user', [AuthController::class, 'me'])->middleware(['auth:api', 'throttle:api']);
 
 Route::get('/hello', function () {
     return ApiResponse::success([
@@ -29,4 +29,4 @@ Route::get('/hello', function () {
         'version' => app()->version(),
         'status' => 'active',
     ], 'Data retrieved successfully');
-});
+})->middleware('throttle:api');

@@ -19,7 +19,7 @@ class OctaneDevCommand extends Command
     protected $signature = 'octane:dev
                             {--host=127.0.0.1 : The IP address the server should bind to}
                             {--port=8000 : The port the server should bind to}
-                            {--server=swoole : The Octane server to use (swoole)}
+                            {--server= : The Octane server to use (frankenphp, swoole)}
                             {--workers=auto : The number of workers}';
 
     /**
@@ -36,7 +36,7 @@ class OctaneDevCommand extends Command
     {
         $host = $this->option('host');
         $port = $this->option('port');
-        $server = $this->option('server');
+        $server = $this->option('server') ?: config('octane.server', 'frankenphp');
         $workers = $this->option('workers');
 
         // Pastikan tidak ada server octane gantung sebelumnya

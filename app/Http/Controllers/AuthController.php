@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -27,13 +29,9 @@ class AuthController extends Controller
     /**
      * Register a new user and generate a JWT token.
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],
@@ -44,7 +42,7 @@ class AuthController extends Controller
         $token = $this->guard()->login($user);
 
         return ApiResponse::success([
-            'user' => $user,
+            'user' => new UserResource($user),
             'authorization' => [
                 'token' => $token,
                 'type' => 'bearer',
@@ -56,12 +54,9 @@ class AuthController extends Controller
     /**
      * Authenticate user and return a JWT token.
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->validated();
 
         $token = $this->guard()->attempt($credentials);
 
@@ -70,7 +65,7 @@ class AuthController extends Controller
         }
 
         return ApiResponse::success([
-            'user' => $this->guard()->user(),
+            'user' => new UserResource($this->guard()->user()),
             'authorization' => [
                 'token' => $token,
                 'type' => 'bearer',
@@ -84,7 +79,7 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        return ApiResponse::success($this->guard()->user(), 'User profile retrieved successfully');
+        return ApiResponse::success(new UserResource($this->guard()->user()), 'User profile retrieved successfully');
     }
 
     /**

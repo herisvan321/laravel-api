@@ -1,17 +1,21 @@
 # Laravel REST API
 
-Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk kecepatan, ukuran ringan (*lightweight*), dan format respons JSON yang konsisten.
+Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk performa ultra-tinggi (*high throughput*), ukuran ringan (*lightweight*), dan format respons JSON yang konsisten.
 
 ---
 
 ## ✨ Fitur Utama
 
-- **Pure API Mode:** Rute web dinonaktifkan (`web.php` dimatikan), tanpa *overhead* Blade ataupun frontend assets.
-- **Standar Respons JSON Konsisten:** Semua error (404, 405, 500) otomatis di-render sebagai respons JSON yang bersih, tanpa halaman HTML atau debug trace bocor.
+- **Pure API Mode:** Rute web dinonaktifkan (`web.php` dimatikan), tanpa *overhead* Blade ataupun dependensi Node.js / `node_modules`.
+- **Dukungan Dual-Engine Laravel Octane:**
+  - **FrankenPHP:** Dikonfigurasi penuh untuk deployment Docker di server production (mendukung HTTP/3, Auto-SSL Caddy, dan Worker Mode via `public/frankenphp-worker.php`).
+  - **Swoole:** Tersedia untuk local development berkecepatan tinggi (>5.000 req/s) dengan auto-reload watcher pure PHP.
 - **Autentikasi JWT Siap Pakai:** Terintegrasi dengan **JWT (JSON Web Token)** modern via `php-open-source-saver/jwt-auth` (cocok untuk Microservices, Mobile App Flutter/Kotlin/Swift, maupun SPA React/Vue/Next.js).
 - **Berbagi Auth Antar Microservice:** Panduan lengkap verifikasi JWT di **NestJS** & **Rust** tersedia di [MICROSERVICES_AUTH.md](MICROSERVICES_AUTH.md).
-- **Vendor Ringan (~56 MB):** Paket pengembangan yang tidak krusial telah dieliminasi untuk menjaga footprint tetap minimal.
-- **Database Portabel:** Menggunakan SQLite secara default, siap dijalankan tanpa setup database server eksternal.
+- **Proteksi Brute-Force & Rate Limiting:** Dilengkapi limiter 10 req/menit untuk `/api/auth/login` dan `/api/auth/register`, serta 60 req/menit untuk endpoint umum API.
+- **Arsitektur Bersih (Clean Architecture):** Validasi terisolasi menggunakan dedicated Form Requests (`RegisterRequest`, `LoginRequest`) dan proteksi atribut sensitif via `UserResource`.
+- **Health Check & Service Monitoring (`/api/health`):** Memonitor latensi database, cache, deteksi runtime Octane, dan pemakaian memori secara real-time.
+- **Standar Respons JSON Konsisten:** Semua error (404, 405, 422, 429, 500) otomatis di-render sebagai respons JSON yang bersih.
 
 ---
 
@@ -19,7 +23,7 @@ Proyek backend **Pure RESTful API** berbasis Laravel 13 yang dioptimasi untuk ke
 
 - **PHP** >= 8.3
 - **Composer**
-- Ekstensi PHP: `sqlite3`, `curl`, `mbstring`, `openssl`, `swoole`
+- Ekstensi PHP: `sqlite3`, `curl`, `mbstring`, `openssl`, `pcntl`, `swoole` (atau runtime Docker FrankenPHP di server).
 
 ---
 
@@ -45,13 +49,13 @@ php artisan migrate
 ### 4. Jalankan Server Lokal
 Pilih mode server yang diinginkan:
 
-- **Mode Super Cepat (Laravel Octane + Swoole + Auto-Reload Otomatis):**
+- **Mode Laravel Octane (Auto-Reload Pure PHP, Tanpa node_modules):**
   ```bash
   composer octane
   # Server aktif di http://127.0.0.1:8000
-  # Otomatis me-reload worker saat file diedit (100% Pure PHP, tanpa node_modules!)
+  # Menggunakan engine yang disetel pada OCTANE_SERVER di .env (frankenphp atau swoole)
   ```
-- **Mode Standar (Bawaan PHP):**
+- **Mode Standar (Bawaan PHP CLI):**
   ```bash
   php artisan serve
   ```

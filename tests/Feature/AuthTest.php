@@ -135,6 +135,28 @@ class AuthTest extends TestCase
             ]);
     }
 
+    public function test_auth_rate_limiting_blocks_excessive_login_attempts(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson('/api/auth/login', [
+                'email' => 'ratelimit@example.com',
+                'password' => 'wrongpass',
+            ]);
+        }
+
+        // The 11th request within 1 minute must be blocked by rate limiter
+        $response = $this->postJson('/api/auth/login', [
+            'email' => 'ratelimit@example.com',
+            'password' => 'wrongpass',
+        ]);
+
+        $response->assertStatus(429)
+            ->assertJson([
+                'success' => false,
+                'code' => 429,
+            ]);
+    }
+
     /**
      * Helper to log in a user with the JWT guard.
      */
